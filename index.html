@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Funnel - Get Started Today</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 40px;
+        }
+        form {
+            margin-bottom: 40px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        h2 {
+            color: #667eea;
+            margin-top: 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 15px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        hr {
+            margin: 40px 0;
+            border: none;
+            border-top: 2px dashed #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌞 Welcome to Solar Funnel</h1>
+
+        <!-- LEAD FUNNEL -->
+        <form name="lead-form" netlify>
+            <input type="hidden" name="form-name" value="lead-form" />
+            <h2>📥 Get Your Free Solar Guide</h2>
+            <label>
+                Your Name:
+                <input type="text" name="name" required placeholder="John Doe" />
+            </label>
+            <label>
+                Your Email:
+                <input type="email" name="email" required placeholder="john@example.com" />
+            </label>
+            <label>
+                Phone (Optional):
+                <input type="tel" name="phone" placeholder="+1 (555) 123-4567" />
+            </label>
+            <button type="submit">Download Free Guide</button>
+        </form>
+
+        <hr>
+
+        <!-- SALES FUNNEL -->
+        <form name="sales-form" netlify>
+            <input type="hidden" name="form-name" value="sales-form" />
+            <h2>💳 Purchase Solar Package</h2>
+            <label>
+                Your Name:
+                <input type="text" name="name" required placeholder="John Doe" />
+            </label>
+            <label>
+                Your Email:
+                <input type="email" name="email" required placeholder="john@example.com" />
+            </label>
+            <label>
+                Select Package:
+                <select name="package" required>
+                    <option value="">Choose a package...</option>
+                    <option value="basic">Basic Package - $97</option>
+                    <option value="premium">Premium Package - $197</option>
+                    <option value="enterprise">Enterprise Package - $497</option>
+                </select>
+            </label>
+            <button type="submit">Complete Purchase</button>
+        </form>
+
+        <hr>
+
+        <!-- BOOKING FUNNEL -->
+        <form name="booking-form" netlify>
+            <input type="hidden" name="form-name" value="booking-form" />
+            <h2>📅 Book a Consultation Call</h2>
+            <label>
+                Your Name:
+                <input type="text" name="name" required placeholder="John Doe" />
+            </label>
+            <label>
+                Your Email:
+                <input type="email" name="email" required placeholder="john@example.com" />
+            </label>
+            <label>
+                Preferred Date & Time:
+                <input type="datetime-local" name="preferredDate" required />
+            </label>
+            <label>
+                Message (Optional):
+                <textarea name="message" rows="3" placeholder="Tell us about your project..."></textarea>
+            </label>
+            <button type="submit">Book My Call</button>
+        </form>
+    </div>
+</body>
+</html>
