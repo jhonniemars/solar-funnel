@@ -373,103 +373,57 @@ section.full{max-width:100%;padding:0;}
   </div>
 
   <!-- S-PAGE 1: HERO -->
-<div class="installations-showcase">
-  <div class="photo-grid">
-    <div class="photo-item main">
-      <img src="path-to-first-photo.jpg" alt="Solar panel installation aerial view">
-      <div class="photo-overlay">
-        <span class="photo-badge">Recent Installation</span>
+  <div class="fpage active" id="sales-p1">
+    <div class="hero-wrap">
+      <div class="hero-grid-bg"></div>
+      <div class="sun-glow" style="width:600px;height:600px;top:-200px;right:-100px;"></div>
+      <!-- Solar panel SVG art -->
+      <svg class="panel-art" viewBox="0 0 320 240" fill="none">
+        <rect x="10" y="30" width="60" height="40" rx="2" fill="white" opacity=".6"/>
+        <rect x="10" y="75" width="60" height="40" rx="2" fill="white" opacity=".6"/>
+        <rect x="75" y="10" width="60" height="40" rx="2" fill="white" opacity=".6"/>
+        <rect x="75" y="55" width="60" height="40" rx="2" fill="white" opacity=".6"/>
+        <rect x="75" y="100" width="60" height="40" rx="2" fill="white" opacity=".6"/>
+        <rect x="140" y="30" width="60" height="40" rx="2" fill="white" opacity=".6"/>
+        <rect x="140" y="75" width="60" height="40" rx="2" fill="white" opacity=".6"/>
+        <rect x="205" y="10" width="60" height="40" rx="2" fill="white" opacity=".6"/>
+        <rect x="205" y="55" width="60" height="40" rx="2" fill="white" opacity=".6"/>
+        <line x1="10" y1="50" x2="300" y2="50" stroke="white" opacity=".3"/>
+        <line x1="10" y1="95" x2="300" y2="95" stroke="white" opacity=".3"/>
+        <line x1="75" y1="10" x2="75" y2="180" stroke="white" opacity=".3"/>
+        <line x1="140" y1="10" x2="140" y2="180" stroke="white" opacity=".3"/>
+        <line x1="205" y1="10" x2="205" y2="180" stroke="white" opacity=".3"/>
+        <path d="M40 200 L40 150 L280 150 L280 200" stroke="white" opacity=".4" stroke-width="2"/>
+        <line x1="160" y1="200" x2="160" y2="220" stroke="white" opacity=".4" stroke-width="3"/>
+        <line x1="80" y1="220" x2="240" y2="220" stroke="white" opacity=".4" stroke-width="3"/>
+      </svg>
+
+      <div class="eyebrow">Clean Energy for Every Home</div>
+      <h1 class="hero-title">
+        Cut Your Bill.<br>
+        Power Your Home.<br>
+        <span class="accent">Go Solar Today.</span>
+      </h1>
+      <p class="hero-sub">Join 12,000+ Filipino homeowners saving an average of ₱4,800 per month with SolarAxis panels — zero upfront cost, guaranteed performance.</p>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        <button class="btn btn-sun" onclick="gotoPage('sales',2)">
+          See How It Works
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="8" x2="13" y2="8"/><polyline points="9,4 13,8 9,12"/></svg>
+        </button>
+        <button class="btn btn-outline" onclick="gotoPage('sales',3)">Calculate My Savings</button>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num">12K+</div><div class="stat-label">Homes powered</div></div>
+        <div class="stat-card"><div class="stat-num">₱4.8K</div><div class="stat-label">Avg. monthly savings</div></div>
+        <div class="stat-card"><div class="stat-num">25yr</div><div class="stat-label">Panel warranty</div></div>
+        <div class="stat-card"><div class="stat-num">0%</div><div class="stat-label">Upfront cost option</div></div>
       </div>
     </div>
-    <div class="photo-item">
-      <img src="path-to-second-photo.jpg" alt="Solar panels on metal roof">
-    </div>
-    <div class="photo-item">
-      <img src="path-to-third-photo.jpg" alt="Solar installation in Gusa, Cagayan de Oro">
-      <div class="location-tag">📍 Gusa, Cagayan de Oro City</div>
+    <div class="footer-strip">
+      <span>☀ SolarAxis · DOE Certified · MERALCO Approved Net Metering Partner</span>
+      <button class="btn btn-sun" style="padding:10px 20px;font-size:11px;" onclick="gotoPage('sales',2)">Next →</button>
     </div>
   </div>
-</div>
-
-<style>
-.installations-showcase {
-  position: absolute;
-  right: 60px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 420px;
-  z-index: 2;
-}
-
-.photo-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-  border: 2px solid rgba(245,166,35,0.2);
-}
-
-.photo-item {
-  position: relative;
-  overflow: hidden;
-  aspect-ratio: 4/3;
-}
-
-.photo-item.main {
-  grid-column: 1 / -1;
-  aspect-ratio: 16/9;
-}
-
-.photo-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.4s ease;
-}
-
-.photo-item:hover img {
-  transform: scale(1.05);
-}
-
-.photo-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 12px 16px;
-  background: linear-gradient(to top, rgba(10,22,40,0.9), transparent);
-}
-
-.photo-badge {
-  font-family: var(--font-display);
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--sun);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.location-tag {
-  position: absolute;
-  bottom: 12px;
-  left: 12px;
-  background: rgba(10,22,40,0.9);
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 11px;
-  color: var(--white);
-  font-family: var(--font-display);
-  font-weight: 600;
-}
-
-@media(max-width:1024px) {
-  .installations-showcase {
-    display: none;
-  }
-}
-</style>
 
   <!-- S-PAGE 2: HOW IT WORKS -->
   <div class="fpage" id="sales-p2">
