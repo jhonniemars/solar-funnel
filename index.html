@@ -24,7 +24,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .nav-tab{padding:7px 18px;border-radius:7px;font-size:12px;font-weight:500;font-family:var(--font-display);letter-spacing:.5px;cursor:pointer;color:var(--muted);border:none;background:transparent;transition:all .2s;white-space:nowrap;}
 .nav-tab.active{background:linear-gradient(135deg,var(--sun),var(--solar));color:var(--sky);font-weight:700;}
 .nav-tab:hover:not(.active){color:var(--white);}
-.page-badge{font-size:11px;font-family:var(--font-display);letter-spacing:1px;color:var(--muted);text-transform:uppercase;}
 
 /* FUNNELS / PAGES */
 .funnel{display:none;min-height:100vh;padding-top:64px;}
@@ -198,7 +197,6 @@ section{padding:80px 60px;max-width:1100px;margin:0 auto;}
     <button class="nav-tab" onclick="switchFunnel('lead')">Lead Funnel</button>
     <button class="nav-tab" onclick="switchFunnel('booking')">Booking Funnel</button>
   </div>
-  <div class="page-badge" id="pageBadge">Hero</div>
 </nav>
 
 <!-- SALES FUNNEL -->
@@ -227,10 +225,6 @@ section{padding:80px 60px;max-width:1100px;margin:0 auto;}
           <div class="eyebrow">Clean Energy · Philippines</div>
           <h1 class="hero-title">Cut Your Bill.<br>Power Your<br>Home. <span class="accent">Go Solar.</span></h1>
           <p class="hero-sub">Join 12,000+ Filipino homeowners saving an average of ₱4,800/month with SolarAxis — zero upfront cost, 25-year warranty.</p>
-          <div style="display:flex;gap:12px;flex-wrap:wrap;">
-            <button class="btn btn-sun" onclick="gotoPage('sales',2)">See Real Installations <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="8" x2="13" y2="8"/><polyline points="9,4 13,8 9,12"/></svg></button>
-            <button class="btn btn-outline" onclick="gotoPage('sales',4)">Calculate Savings</button>
-          </div>
           <div class="stats-row" style="margin-top:36px;">
             <div class="stat-card"><div class="stat-num">12K+</div><div class="stat-label">Homes powered</div></div>
             <div class="stat-card"><div class="stat-num">₱4.8K</div><div class="stat-label">Avg. monthly savings</div></div>
@@ -669,7 +663,6 @@ function switchFunnel(id){
   document.getElementById('funnel-'+id).classList.add('active');
   document.querySelectorAll('.nav-tab')[funnelList.indexOf(id)].classList.add('active');
   window.scrollTo({top:0,behavior:'smooth'});
-  document.getElementById('pageBadge').textContent=pageNames[id][0];
 }
 
 function gotoPage(funnel,n){
@@ -680,7 +673,6 @@ function gotoPage(funnel,n){
     if(el)el.classList.toggle('active',i===n);
     if(nav)nav.className='pnav-step'+(i<n?' done':i===n?' active':'');
   }
-  document.getElementById('pageBadge').textContent=pageNames[funnel][n-1]||'Page '+n;
   window.scrollTo({top:64,behavior:'smooth'});
 }
 
