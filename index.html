@@ -1,74 +1,710 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solar Funnel</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-        }
-        form {
-            background: #f5f5f5;
-            padding: 30px;
-            border-radius: 8px;
-        }
-        input, textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0 20px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            background: #00C7B7;
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            background: #00a396;
-        }
-    </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SolarAxis — GHL Funnel Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Sans:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --sun:#F5A623;--sun-light:#FFD580;--solar:#FF6B1A;
+  --sky:#0A1628;--sky-mid:#0F2040;--sky-light:#1A3560;
+  --white:#F8F4EE;--muted:#8A9BB8;--border:rgba(255,255,255,0.08);
+  --font-display:'Syne',sans-serif;--font-body:'Instrument Sans',sans-serif;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--sky);color:var(--white);font-family:var(--font-body);overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:1000;opacity:.4;}
+
+/* NAV */
+.funnel-nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:64px;background:rgba(10,22,40,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);}
+.brand{font-family:var(--font-display);font-size:18px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,var(--sun),var(--solar));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.nav-tabs{display:flex;gap:4px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:4px;}
+.nav-tab{padding:7px 18px;border-radius:7px;font-size:12px;font-weight:500;font-family:var(--font-display);letter-spacing:.5px;cursor:pointer;color:var(--muted);border:none;background:transparent;transition:all .2s;white-space:nowrap;}
+.nav-tab.active{background:linear-gradient(135deg,var(--sun),var(--solar));color:var(--sky);font-weight:700;}
+.nav-tab:hover:not(.active){color:var(--white);}
+.page-badge{font-size:11px;font-family:var(--font-display);letter-spacing:1px;color:var(--muted);text-transform:uppercase;}
+
+/* FUNNELS / PAGES */
+.funnel{display:none;min-height:100vh;padding-top:64px;}
+.funnel.active{display:block;}
+.fpage{display:none;animation:fadeUp .4s ease;}
+.fpage.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+/* PAGE NAV */
+.page-nav{position:sticky;top:64px;z-index:400;display:flex;align-items:center;justify-content:center;gap:0;background:rgba(10,22,40,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:12px 40px;}
+.pnav-step{display:flex;align-items:center;gap:8px;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:11px;font-family:var(--font-display);font-weight:600;letter-spacing:.5px;color:var(--muted);transition:all .2s;text-transform:uppercase;}
+.pnav-step.active{color:var(--sun);}
+.pnav-step.done{color:rgba(245,166,35,.5);}
+.pnav-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;border:1px solid currentColor;flex-shrink:0;}
+.pnav-step.active .pnav-num{background:var(--sun);border-color:var(--sun);color:var(--sky);}
+.pnav-arrow{color:var(--border);font-size:14px;padding:0 4px;}
+
+/* SHARED LAYOUT */
+section{padding:80px 60px;max-width:1100px;margin:0 auto;}
+.sun-glow{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(245,166,35,.2) 0%,transparent 70%);pointer-events:none;}
+.hero-grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 60% at 50% 50%,black,transparent);}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-family:var(--font-display);font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--sun);margin-bottom:24px;}
+.eyebrow::before{content:'';width:24px;height:1px;background:var(--sun);}
+.hero-title{font-family:var(--font-display);font-weight:800;font-size:clamp(48px,6.5vw,88px);line-height:.92;letter-spacing:-2px;margin-bottom:24px;}
+.hero-title .accent{background:linear-gradient(135deg,var(--sun),var(--solar));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-sub{font-size:16px;color:var(--muted);max-width:500px;line-height:1.75;margin-bottom:40px;font-style:italic;}
+.section-label{font-size:11px;font-family:var(--font-display);letter-spacing:3px;text-transform:uppercase;color:var(--sun);margin-bottom:12px;}
+.section-title{font-family:var(--font-display);font-size:clamp(32px,4vw,52px);font-weight:800;letter-spacing:-1px;line-height:.95;margin-bottom:16px;}
+.section-sub{font-size:15px;color:var(--muted);font-style:italic;line-height:1.7;max-width:520px;margin-bottom:40px;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;padding:15px 30px;border:none;cursor:pointer;transition:all .25s;text-decoration:none;border-radius:6px;}
+.btn-sun{background:linear-gradient(135deg,var(--sun),var(--solar));color:var(--sky);}
+.btn-sun:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(245,166,35,.3);}
+.btn-outline{background:transparent;color:var(--white);border:1px solid var(--border);}
+.btn-outline:hover{border-color:var(--sun);color:var(--sun);}
+.btn svg{width:15px;height:15px;transition:transform .2s;}
+.btn:hover svg{transform:translateX(3px);}
+
+/* STATS */
+.stats-row{display:flex;gap:1px;margin-top:48px;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--border);}
+.stat-card{flex:1;background:var(--sky-mid);padding:24px 20px;}
+.stat-num{font-family:var(--font-display);font-size:32px;font-weight:800;background:linear-gradient(135deg,var(--sun),var(--solar));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;}
+.stat-label{font-size:11px;color:var(--muted);margin-top:3px;font-style:italic;}
+
+/* CARDS */
+.card{background:var(--sky-mid);border:1px solid var(--border);border-radius:12px;padding:28px;transition:all .25s;}
+.card:hover{border-color:rgba(245,166,35,.3);transform:translateY(-3px);box-shadow:0 20px 60px rgba(0,0,0,.4);}
+.card-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,rgba(245,166,35,.15),rgba(255,107,26,.15));border:1px solid rgba(245,166,35,.2);display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:16px;}
+.card-title{font-family:var(--font-display);font-size:17px;font-weight:700;margin-bottom:6px;}
+.card-text{font-size:13px;color:var(--muted);line-height:1.7;font-style:italic;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+
+/* PHOTO STYLES */
+.photo-img{width:100%;height:100%;object-fit:cover;display:block;}
+.photo-frame{border-radius:16px;overflow:hidden;position:relative;border:1px solid var(--border);}
+.photo-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(10,22,40,.7) 0%,transparent 50%);}
+.photo-caption{position:absolute;bottom:16px;left:16px;right:16px;font-size:12px;font-family:var(--font-display);letter-spacing:1px;text-transform:uppercase;color:var(--white);opacity:.85;}
+
+/* PHOTO GALLERY GRID */
+.photo-gallery{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:260px 260px;gap:16px;margin-bottom:48px;}
+.photo-gallery .ph-main{grid-column:1/3;grid-row:1/2;}
+.photo-gallery .ph-side{grid-column:3/4;grid-row:1/2;}
+.photo-gallery .ph-bot1{grid-column:1/2;grid-row:2/3;}
+.photo-gallery .ph-bot2{grid-column:2/3;grid-row:2/3;}
+.photo-gallery .ph-bot3{grid-column:3/4;grid-row:2/3;}
+
+/* SPLIT HERO */
+.split-hero{display:grid;grid-template-columns:1fr 1fr;min-height:calc(100vh - 112px);}
+.split-left{display:flex;flex-direction:column;justify-content:center;padding:80px 60px;position:relative;overflow:hidden;}
+.split-right{position:relative;overflow:hidden;}
+.split-right img{width:100%;height:100%;object-fit:cover;}
+.split-right::after{content:'';position:absolute;inset:0;background:linear-gradient(to right,var(--sky) 0%,transparent 30%);}
+
+/* PROCESS WITH PHOTO */
+.process-step{display:flex;gap:20px;margin-bottom:28px;align-items:flex-start;}
+.ps-num{width:40px;height:40px;border-radius:10px;flex-shrink:0;background:linear-gradient(135deg,rgba(245,166,35,.15),rgba(255,107,26,.15));border:1px solid rgba(245,166,35,.3);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:16px;font-weight:800;color:var(--sun);}
+.ps-title{font-family:var(--font-display);font-size:17px;font-weight:700;margin-bottom:4px;}
+.ps-text{font-size:13px;color:var(--muted);font-style:italic;line-height:1.7;}
+
+/* TESTIMONIAL */
+.testimonial{background:var(--sky-mid);border:1px solid var(--border);border-radius:12px;padding:28px;position:relative;}
+.testimonial::before{content:'"';position:absolute;top:12px;left:20px;font-size:72px;font-family:serif;color:var(--sun);opacity:.15;line-height:1;}
+.testi-text{font-size:14px;font-style:italic;color:var(--white);line-height:1.8;margin-bottom:16px;}
+.testi-name{font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--sun);}
+.testi-loc{font-size:11px;color:var(--muted);}
+
+/* FORM */
+.form-field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.form-field label{font-size:10px;font-family:var(--font-display);letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:600;}
+.form-field input,.form-field select{background:var(--sky-mid);border:1px solid var(--border);color:var(--white);padding:13px 16px;font-family:var(--font-body);font-size:14px;outline:none;transition:border-color .2s;border-radius:6px;-webkit-appearance:none;}
+.form-field input:focus,.form-field select:focus{border-color:var(--sun);}
+.form-field input::placeholder{color:rgba(138,155,184,.35);}
+.form-field select option{background:var(--sky-mid);}
+.trust-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:12px;font-style:italic;}
+
+/* CALENDAR */
+.cal-wrap{background:var(--sky-mid);border:1px solid var(--border);border-radius:12px;padding:24px;}
+.cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.cal-month{font-family:var(--font-display);font-size:17px;font-weight:700;}
+.cal-nav-btn{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--white);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.cal-nav-btn:hover{border-color:var(--sun);color:var(--sun);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-day-lbl{font-size:10px;font-family:var(--font-display);letter-spacing:1px;color:var(--muted);text-align:center;padding:3px 0 8px;text-transform:uppercase;}
+.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:12px;color:rgba(138,155,184,.35);border-radius:5px;}
+.cal-day.avail{color:var(--white);cursor:pointer;background:rgba(255,255,255,.04);border:1px solid transparent;transition:all .15s;}
+.cal-day.avail:hover{border-color:var(--sun);color:var(--sun);}
+.cal-day.sel{background:linear-gradient(135deg,var(--sun),var(--solar));color:var(--sky);font-weight:700;}
+.time-slots{margin-top:20px;padding-top:16px;border-top:1px solid var(--border);display:none;}
+.time-slots.show{display:block;}
+.time-lbl{font-size:10px;font-family:var(--font-display);letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.slots-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:16px;}
+.slot{padding:9px;background:rgba(255,255,255,.04);border:1px solid var(--border);font-size:12px;text-align:center;cursor:pointer;color:var(--white);border-radius:5px;font-family:var(--font-body);transition:all .15s;}
+.slot:hover,.slot.active{border-color:var(--sun);color:var(--sun);background:rgba(245,166,35,.08);}
+
+/* CONFIRM */
+.confirm-icon{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,var(--sun),var(--solar));display:flex;align-items:center;justify-content:center;margin:0 auto 28px;animation:popIn .6s cubic-bezier(.175,.885,.32,1.275);}
+@keyframes popIn{from{transform:scale(0);opacity:0;}to{transform:scale(1);opacity:1;}}
+.confirm-icon svg{width:32px;height:32px;stroke:var(--sky);stroke-width:2.5;fill:none;}
+.bdc-row{display:flex;gap:12px;margin-bottom:14px;font-size:13px;}
+.bdc-row:last-child{margin-bottom:0;}
+.bdc-icon{font-size:17px;flex-shrink:0;margin-top:1px;}
+.bdc-label{font-size:10px;font-family:var(--font-display);letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
+.bdc-val{color:var(--white);font-weight:500;}
+
+/* SAVINGS CALC */
+.calc-wrap{background:var(--sky-mid);border:1px solid var(--border);border-radius:12px;padding:28px;}
+.calc-label{font-size:10px;font-family:var(--font-display);letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.calc-input{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--white);padding:12px 16px;font-size:18px;font-family:var(--font-display);font-weight:700;border-radius:6px;outline:none;width:100%;transition:border-color .2s;margin-bottom:16px;}
+.calc-input:focus{border-color:var(--sun);}
+.calc-result{background:linear-gradient(135deg,rgba(245,166,35,.1),rgba(255,107,26,.1));border:1px solid rgba(245,166,35,.2);border-radius:10px;padding:20px;text-align:center;}
+.calc-num{font-family:var(--font-display);font-size:40px;font-weight:800;background:linear-gradient(135deg,var(--sun),var(--solar));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;}
+.calc-sub{font-size:12px;color:var(--muted);font-style:italic;margin-top:4px;}
+
+/* FOOTER */
+.footer-strip{background:var(--sky-mid);border-top:1px solid var(--border);padding:18px 40px;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted);font-style:italic;}
+
+/* PHOTO BADGE */
+.img-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(10,22,40,.8);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:11px;color:var(--muted);font-style:italic;backdrop-filter:blur(8px);}
+
+/* LEAD BADGE */
+.lead-badge{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(245,166,35,.12),rgba(255,107,26,.08));border:1px solid rgba(245,166,35,.25);border-radius:100px;padding:9px 18px;font-size:12px;color:var(--sun);font-family:var(--font-display);font-weight:600;letter-spacing:.5px;margin-bottom:28px;}
+
+@media(max-width:768px){
+  .split-hero{grid-template-columns:1fr;}
+  .split-right{height:300px;}
+  .split-right::after{background:linear-gradient(to bottom,var(--sky) 0%,transparent 40%);}
+  .photo-gallery{grid-template-columns:1fr 1fr;grid-template-rows:200px 200px 200px;}
+  .photo-gallery .ph-main{grid-column:1/3;}
+  .photo-gallery .ph-side{grid-column:1/2;grid-row:2/3;}
+  .photo-gallery .ph-bot1{grid-column:2/3;grid-row:2/3;}
+  .photo-gallery .ph-bot2{grid-column:1/2;grid-row:3/4;}
+  .photo-gallery .ph-bot3{grid-column:2/3;grid-row:3/4;}
+  section{padding:60px 24px;}
+  .funnel-nav{padding:0 16px;}
+  .nav-tab{padding:6px 10px;font-size:10px;}
+  .grid-2,.grid-3{grid-template-columns:1fr;}
+  .stats-row{flex-wrap:wrap;}
+  .stat-card{min-width:45%;}
+}
+</style>
 </head>
 <body>
-    <h1>Get Your Solar Quote</h1>
-    
-    <form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field">
-        <input type="hidden" name="form-name" value="contact" />
-        
-        <p style="display: none;">
-            <label>Don't fill this out if you're human: <input name="bot-field" /></label>
-        </p>
-        
-        <div>
-            <label for="name">Full Name *</label>
-            <input type="text" name="name" id="name" required />
+
+<!-- NAV -->
+<nav class="funnel-nav">
+  <div class="brand">☀ SOLARAXIS</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchFunnel('sales')">Sales Funnel</button>
+    <button class="nav-tab" onclick="switchFunnel('lead')">Lead Funnel</button>
+    <button class="nav-tab" onclick="switchFunnel('booking')">Booking Funnel</button>
+  </div>
+  <div class="page-badge" id="pageBadge">Hero</div>
+</nav>
+
+<!-- SALES FUNNEL -->
+<div class="funnel active" id="funnel-sales">
+  <div class="page-nav">
+    <div class="pnav-step active" onclick="gotoPage('sales',1)" id="sales-pnav-1"><div class="pnav-num">1</div>Hero</div>
+    <div class="pnav-arrow">›</div>
+    <div class="pnav-step" onclick="gotoPage('sales',2)" id="sales-pnav-2"><div class="pnav-num">2</div>Gallery</div>
+    <div class="pnav-arrow">›</div>
+    <div class="pnav-step" onclick="gotoPage('sales',3)" id="sales-pnav-3"><div class="pnav-num">3</div>How It Works</div>
+    <div class="pnav-arrow">›</div>
+    <div class="pnav-step" onclick="gotoPage('sales',4)" id="sales-pnav-4"><div class="pnav-num">4</div>Calculator</div>
+    <div class="pnav-arrow">›</div>
+    <div class="pnav-step" onclick="gotoPage('sales',5)" id="sales-pnav-5"><div class="pnav-num">5</div>Reviews</div>
+    <div class="pnav-arrow">›</div>
+    <div class="pnav-step" onclick="gotoPage('sales',6)" id="sales-pnav-6"><div class="pnav-num">6</div>CTA</div>
+  </div>
+
+  <!-- PAGE 1: HERO -->
+  <div class="fpage active" id="sales-p1">
+    <div class="split-hero">
+      <div class="split-left">
+        <div class="hero-grid-bg"></div>
+        <div class="sun-glow" style="width:400px;height:400px;top:-100px;left:-100px;"></div>
+        <div style="position:relative;z-index:2;">
+          <div class="eyebrow">Clean Energy · Philippines</div>
+          <h1 class="hero-title">Cut Your Bill.<br>Power Your<br>Home. <span class="accent">Go Solar.</span></h1>
+          <p class="hero-sub">Join 12,000+ Filipino homeowners saving an average of ₱4,800/month with SolarAxis — zero upfront cost, 25-year warranty.</p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <button class="btn btn-sun" onclick="gotoPage('sales',2)">See Real Installations <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="8" x2="13" y2="8"/><polyline points="9,4 13,8 9,12"/></svg></button>
+            <button class="btn btn-outline" onclick="gotoPage('sales',4)">Calculate Savings</button>
+          </div>
+          <div class="stats-row" style="margin-top:36px;">
+            <div class="stat-card"><div class="stat-num">12K+</div><div class="stat-label">Homes powered</div></div>
+            <div class="stat-card"><div class="stat-num">₱4.8K</div><div class="stat-label">Avg. monthly savings</div></div>
+            <div class="stat-card"><div class="stat-num">25yr</div><div class="stat-label">Panel warranty</div></div>
+          </div>
         </div>
-        
-        <div>
-            <label for="email">Email Address *</label>
-            <input type="email" name="email" id="email" required />
+      </div>
+      <div class="split-right">
+        <img src="https://images.unsplash.com/photo-1613665813446-82a78c468a1d?w=900&q=80&fit=crop" alt="House with solar panels" class="photo-img"/>
+        <div style="position:absolute;bottom:24px;right:24px;z-index:3;">
+          <div class="img-badge">☀ Real SolarAxis Installation</div>
         </div>
-        
-        <div>
-            <label for="phone">Phone Number</label>
-            <input type="tel" name="phone" id="phone" />
+      </div>
+    </div>
+    <div class="footer-strip">
+      <span>☀ SolarAxis · DOE Certified · MERALCO Approved Net Metering Partner</span>
+      <button class="btn btn-sun" style="padding:9px 18px;font-size:11px;" onclick="gotoPage('sales',2)">Next →</button>
+    </div>
+  </div>
+
+  <!-- PAGE 2: GALLERY -->
+  <div class="fpage" id="sales-p2">
+    <section>
+      <div class="section-label">Real Installations</div>
+      <div class="section-title">Filipino Homes<br>Powered by <span style="color:var(--sun)">SolarAxis</span></div>
+      <div class="section-sub">Every installation is custom-designed for the home. Here's what real SolarAxis systems look like across the Philippines.</div>
+      <div class="photo-gallery">
+        <div class="photo-frame ph-main">
+          <img src="https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?w=900&q=80&fit=crop" alt="Solar home" class="photo-img"/>
+          <div class="photo-overlay"></div>
+          <div class="photo-caption">☀ Quezon City · 6kW System · Saves ₱5,200/month</div>
         </div>
-        
-        <div>
-            <label for="message">Message</label>
-            <textarea name="message" id="message" rows="4"></textarea>
+        <div class="photo-frame ph-side">
+          <img src="https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=600&q=80&fit=crop" alt="Engineer installing" class="photo-img"/>
+          <div class="photo-overlay"></div>
+          <div class="photo-caption">🔧 Certified Engineer · Installation Day</div>
         </div>
-        
-        <button type="submit">Submit</button>
-    </form>
+        <div class="photo-frame ph-bot1">
+          <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?w=500&q=80&fit=crop" alt="Solar panels" class="photo-img"/>
+          <div class="photo-overlay"></div>
+          <div class="photo-caption">📍 Cebu City · 4kW System</div>
+        </div>
+        <div class="photo-frame ph-bot2">
+          <img src="https://images.unsplash.com/photo-1592833159057-1f31fcacf0be?w=500&q=80&fit=crop" alt="Installation team" class="photo-img"/>
+          <div class="photo-overlay"></div>
+          <div class="photo-caption">👷 2-Day Installation · All Permits Handled</div>
+        </div>
+        <div class="photo-frame ph-bot3">
+          <img src="https://images.unsplash.com/photo-1545209463-e2825498edbf?w=500&q=80&fit=crop" alt="Residential solar" class="photo-img"/>
+          <div class="photo-overlay"></div>
+          <div class="photo-caption">📍 Davao · 8kW System · ₱0 Bill</div>
+        </div>
+      </div>
+      <div class="grid-3" style="margin-bottom:40px;">
+        <div class="card"><div class="card-icon">🏠</div><div class="card-title">Any Roof Type</div><div class="card-text">Our engineers are trained to install on concrete, clay tile, metal, and asphalt roofs common in Filipino homes.</div></div>
+        <div class="card"><div class="card-icon">⚡</div><div class="card-title">1–2 Day Install</div><div class="card-text">Most residential systems are fully installed and operational within 1 to 2 days from start to finish.</div></div>
+        <div class="card"><div class="card-icon">📋</div><div class="card-title">Permits Included</div><div class="card-text">We handle all MERALCO net metering applications, DOE certifications, and local permits — you don't have to do anything.</div></div>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="btn btn-sun" onclick="gotoPage('sales',3)">See How It Works →</button>
+        <button class="btn btn-outline" onclick="gotoPage('sales',1)">← Back</button>
+      </div>
+    </section>
+    <div class="footer-strip">
+      <span>Sales Funnel · Page 2 — Real Installations Gallery</span>
+      <button class="btn btn-sun" style="padding:9px 18px;font-size:11px;" onclick="gotoPage('sales',3)">Next →</button>
+    </div>
+  </div>
+
+  <!-- PAGE 3: HOW IT WORKS -->
+  <div class="fpage" id="sales-p3">
+    <section>
+      <div class="grid-2" style="gap:60px;align-items:start;">
+        <div>
+          <div class="section-label">The Process</div>
+          <div class="section-title">From Quote to<br>Power in <span style="color:var(--sun)">4 Steps</span></div>
+          <div class="section-sub">We handle everything. You just watch your bill drop.</div>
+          <div class="process-step"><div class="ps-num">01</div><div><div class="ps-title">Free Home Assessment</div><div class="ps-text">Our engineer visits, inspects your roof, reviews your bills, and designs a custom system sized for your home.</div></div></div>
+          <div class="process-step"><div class="ps-num">02</div><div><div class="ps-title">Custom Quote & Financing</div><div class="ps-text">Detailed proposal within 24 hours. Choose outright, installment, or zero-downpayment lease.</div></div></div>
+          <div class="process-step"><div class="ps-num">03</div><div><div class="ps-title">Professional Installation</div><div class="ps-text">Certified crew installs in 1–2 days. We file all permits, MERALCO paperwork, and net metering for you.</div></div></div>
+          <div class="process-step"><div class="ps-num">04</div><div><div class="ps-title">Start Saving Immediately</div><div class="ps-text">Your system goes live. Monitor savings in real-time from the SolarAxis mobile app.</div></div></div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;">
+            <button class="btn btn-sun" onclick="gotoPage('sales',4)">Calculate My Savings →</button>
+            <button class="btn btn-outline" onclick="gotoPage('sales',2)">← Back</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div class="photo-frame" style="height:320px;">
+            <img src="https://images.unsplash.com/photo-1613665813446-82a78c468a1d?w=700&q=80&fit=crop" alt="Engineer on-site" class="photo-img"/>
+            <div class="photo-overlay"></div>
+            <div class="photo-caption">🔧 SolarAxis Certified Engineer · On-site installation</div>
+          </div>
+          <div class="photo-frame" style="height:220px;">
+            <img src="https://images.unsplash.com/photo-1595437193398-b27ab8ddc0e7?w=700&q=80&fit=crop" alt="Before & after" class="photo-img"/>
+            <div class="photo-overlay"></div>
+            <div class="photo-caption">🏠 Before &amp; after — Makati homeowner</div>
+          </div>
+          <div style="background:linear-gradient(135deg,rgba(245,166,35,.1),rgba(255,107,26,.08));border:1px solid rgba(245,166,35,.2);border-radius:10px;padding:16px 20px;">
+            <div style="font-size:11px;font-family:var(--font-display);letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Did You Know?</div>
+            <div style="font-size:14px;color:var(--white);font-style:italic;line-height:1.7;">The Philippines receives <strong style="color:var(--sun);">4.5–5.5 peak sun hours</strong> daily — one of the highest in Asia. Your panels produce maximum energy almost year-round.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div class="footer-strip">
+      <span>Sales Funnel · Page 3 — How It Works</span>
+      <button class="btn btn-sun" style="padding:9px 18px;font-size:11px;" onclick="gotoPage('sales',4)">Next →</button>
+    </div>
+  </div>
+
+  <!-- PAGE 4: CALCULATOR -->
+  <div class="fpage" id="sales-p4">
+    <section>
+      <div class="section-label">Savings Estimator</div>
+      <div class="section-title">How Much Will<br>You <span style="color:var(--sun)">Save?</span></div>
+      <div class="section-sub">Enter your monthly electric bill and see your estimated solar savings instantly.</div>
+      <div class="grid-2" style="gap:40px;align-items:start;">
+        <div>
+          <div class="calc-wrap">
+            <div class="calc-label">Your monthly electric bill (₱)</div>
+            <input class="calc-input" type="number" id="billInput" placeholder="5000" oninput="calcSavings()"/>
+            <div class="calc-label">Home size</div>
+            <select class="calc-input" id="homeSize" onchange="calcSavings()" style="font-size:14px;margin-bottom:20px;">
+              <option value="0.7">Small (1–2 bedrooms)</option>
+              <option value="1" selected>Medium (3 bedrooms)</option>
+              <option value="1.3">Large (4+ bedrooms)</option>
+            </select>
+            <div class="calc-result">
+              <div class="calc-num" id="calcNum">₱ —</div>
+              <div class="calc-sub">estimated monthly savings</div>
+              <div style="margin-top:8px;font-size:12px;color:var(--muted);font-style:italic;" id="calcAnnual"></div>
+            </div>
+          </div>
+          <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap;">
+            <button class="btn btn-sun" onclick="gotoPage('sales',5)">See Customer Reviews →</button>
+            <button class="btn btn-outline" onclick="gotoPage('sales',3)">← Back</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div class="photo-frame" style="height:260px;">
+            <img src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=700&q=80&fit=crop" alt="Solar panels sunny day" class="photo-img"/>
+            <div class="photo-overlay"></div>
+            <div class="photo-caption">☀ Net metering — excess power sold back to MERALCO</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">📊</div>
+            <div class="card-title">Net Metering Benefit</div>
+            <div class="card-text">Sell excess power back to MERALCO. Many of our customers receive ₱0 electric bills on sunny months — some even get credits.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div class="footer-strip">
+      <span>Sales Funnel · Page 4 — Savings Calculator</span>
+      <button class="btn btn-sun" style="padding:9px 18px;font-size:11px;" onclick="gotoPage('sales',5)">Next →</button>
+    </div>
+  </div>
+
+  <!-- PAGE 5: REVIEWS -->
+  <div class="fpage" id="sales-p5">
+    <section>
+      <div class="section-label">Real Results</div>
+      <div class="section-title">12,000 Homes.<br><span style="color:var(--sun)">Real Savings.</span></div>
+      <div class="section-sub">Hear from homeowners across the Philippines who made the switch.</div>
+      <div class="grid-2" style="gap:16px;margin-bottom:40px;">
+        <div class="photo-frame" style="height:280px;">
+          <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?w=700&q=80&fit=crop" alt="Installation complete" class="photo-img"/>
+          <div class="photo-overlay"></div>
+          <div class="photo-caption">📍 Quezon City installation — Day 1 complete</div>
+        </div>
+        <div class="photo-frame" style="height:280px;">
+          <img src="https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=700&q=80&fit=crop" alt="Certified engineers" class="photo-img"/>
+          <div class="photo-overlay"></div>
+          <div class="photo-caption">🔧 Certified engineers — professional installation every time</div>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="testimonial"><div class="testi-text">My electric bill went from ₱8,200 to ₱620 in the first month. SolarAxis handled every single permit — I didn't lift a finger.</div><div class="testi-name">Maria Santos</div><div class="testi-loc">Quezon City · 3-bedroom home</div></div>
+        <div class="testimonial"><div class="testi-text">After 6 months, my panels have already saved me over ₱40,000. The payback period is way faster than I expected.</div><div class="testi-name">Rodel Cruz</div><div class="testi-loc">Cebu City · Business owner</div></div>
+        <div class="testimonial"><div class="testi-text">Installation was done in a single day. I now monitor my savings live on my phone every morning. Best decision I ever made.</div><div class="testi-name">Liza Reyes</div><div class="testi-loc">Makati · 4-bedroom home</div></div>
+      </div>
+      <div style="margin-top:28px;display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+        <div style="color:var(--sun);font-size:20px;letter-spacing:2px;">★★★★★</div>
+        <div style="font-size:13px;color:var(--muted);font-style:italic;">4.9 / 5.0 — based on 2,847 verified reviews</div>
+      </div>
+      <div style="margin-top:28px;display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="btn btn-sun" onclick="gotoPage('sales',6)">Get My Free Quote →</button>
+        <button class="btn btn-outline" onclick="gotoPage('sales',4)">← Back</button>
+      </div>
+    </section>
+    <div class="footer-strip">
+      <span>Sales Funnel · Page 5 — Reviews</span>
+      <button class="btn btn-sun" style="padding:9px 18px;font-size:11px;" onclick="gotoPage('sales',6)">Next →</button>
+    </div>
+  </div>
+
+  <!-- PAGE 6: CTA -->
+  <div class="fpage" id="sales-p6">
+    <div style="position:relative;min-height:calc(100vh - 112px);display:flex;align-items:center;justify-content:center;overflow:hidden;">
+      <img src="https://images.unsplash.com/photo-1545209463-e2825498edbf?w=1400&q=80&fit=crop" alt="Solar panels blue sky" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.25;"/>
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom,var(--sky) 0%,rgba(10,22,40,.7) 50%,var(--sky) 100%);"></div>
+      <div class="hero-grid-bg"></div>
+      <div class="sun-glow" style="width:600px;height:600px;top:-100px;left:50%;transform:translateX(-50%);"></div>
+      <div style="position:relative;z-index:2;text-align:center;max-width:720px;padding:60px 40px;">
+        <div class="eyebrow" style="justify-content:center;">Limited Slots This Month</div>
+        <h2 class="hero-title" style="text-align:center;font-size:clamp(44px,6vw,80px);">Ready to Stop<br>Overpaying<br><span class="accent">Meralco?</span></h2>
+        <p class="hero-sub" style="text-align:center;margin:0 auto 40px;max-width:480px;">Get your free solar assessment this week. No obligation, no pressure — just a clear picture of how much you'll save.</p>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-bottom:32px;">
+          <button class="btn btn-sun" style="font-size:14px;padding:18px 40px;" onclick="switchFunnel('booking')">Book Free Assessment ☀</button>
+          <button class="btn btn-outline" onclick="switchFunnel('lead')">Download Free Guide</button>
+        </div>
+        <div style="display:flex;gap:28px;justify-content:center;flex-wrap:wrap;">
+          <span style="font-size:13px;color:var(--muted);font-style:italic;">✓ No upfront cost</span>
+          <span style="font-size:13px;color:var(--muted);font-style:italic;">✓ Free site visit</span>
+          <span style="font-size:13px;color:var(--muted);font-style:italic;">✓ No obligation</span>
+        </div>
+      </div>
+    </div>
+    <div class="footer-strip">
+      <span>Sales Funnel · Page 6 — Final CTA</span>
+      <button class="btn btn-outline" style="padding:9px 18px;font-size:11px;" onclick="gotoPage('sales',5)">← Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEAD FUNNEL -->
+<div class="funnel" id="funnel-lead">
+  <div class="page-nav">
+    <div class="pnav-step active" onclick="gotoPage('lead',1)" id="lead-pnav-1"><div class="pnav-num">1</div>Opt-in</div>
+    <div class="pnav-arrow">›</div>
+    <div class="pnav-step" onclick="gotoPage('lead',2)" id="lead-pnav-2"><div class="pnav-num">2</div>Thank You</div>
+  </div>
+  <div class="fpage active" id="lead-p1">
+    <div class="split-hero">
+      <div class="split-left">
+        <div class="hero-grid-bg"></div>
+        <div class="sun-glow" style="width:400px;height:400px;top:-100px;right:-50px;"></div>
+        <div style="position:relative;z-index:2;">
+          <div class="lead-badge">☀ FREE GUIDE — 2025 Edition</div>
+          <h1 class="hero-title" style="font-size:clamp(36px,4.5vw,64px);">The Complete<br>Solar Savings<br><span class="accent">Playbook</span></h1>
+          <p class="hero-sub" style="margin-bottom:28px;">Everything a Filipino homeowner needs to know before going solar — costs, financing, net metering, and the 5 most expensive mistakes to avoid.</p>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:28px;">
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--white);"><span style="color:var(--sun);">☀</span>How to pick the right panel size for your home</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--white);"><span style="color:var(--sun);">☀</span>MERALCO net metering — step-by-step</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--white);"><span style="color:var(--sun);">☀</span>0% financing options available in the Philippines</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--white);"><span style="color:var(--sun);">☀</span>5 red flags to watch for with solar installers</div>
+          </div>
+          <div class="form-field"><label>First Name</label><input type="text" placeholder="e.g. Maria"/></div>
+          <div class="form-field"><label>Email Address</label><input type="email" placeholder="you@email.com"/></div>
+          <div style="margin-top:8px;">
+            <button class="btn btn-sun" style="width:100%;justify-content:center;" onclick="gotoPage('lead',2)">Send Me the Free Guide ☀</button>
+          </div>
+          <div class="trust-row">🔒 No spam. Unsubscribe anytime.</div>
+        </div>
+      </div>
+      <div class="split-right">
+        <img src="https://images.unsplash.com/photo-1592833159057-1f31fcacf0be?w=900&q=80&fit=crop" alt="Solar panels sunny day" class="photo-img"/>
+        <div style="position:absolute;bottom:24px;right:24px;z-index:3;">
+          <div class="img-badge">📖 42-page free guide</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-strip"><span>Lead Funnel · Step 1 of 2 — Opt-in Page</span><button class="btn btn-sun" style="padding:9px 18px;font-size:11px;" onclick="gotoPage('lead',2)">Next →</button></div>
+  </div>
+  <div class="fpage" id="lead-p2">
+    <section style="text-align:center;display:flex;flex-direction:column;align-items:center;min-height:70vh;justify-content:center;">
+      <div class="confirm-icon"><svg viewBox="0 0 36 36"><polyline points="6,18 14,26 30,10"/></svg></div>
+      <div class="eyebrow" style="justify-content:center;">Your Guide Is On Its Way</div>
+      <h2 class="hero-title" style="text-align:center;font-size:clamp(38px,5vw,64px);">Check Your<br><span class="accent">Inbox! ☀</span></h2>
+      <p class="hero-sub" style="text-align:center;margin:0 auto 36px;max-width:440px;">Your Solar Savings Playbook is being delivered now. Ready to see exactly how much your home could save?</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:40px;">
+        <button class="btn btn-sun" onclick="switchFunnel('booking')">Book My Free Assessment <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="8" x2="13" y2="8"/><polyline points="9,4 13,8 9,12"/></svg></button>
+        <button class="btn btn-outline" onclick="switchFunnel('sales')">Explore SolarAxis</button>
+      </div>
+      <div class="photo-frame" style="max-width:560px;width:100%;height:220px;">
+        <img src="https://images.unsplash.com/photo-1545209463-e2825498edbf?w=800&q=80&fit=crop" alt="Beautiful house with solar" class="photo-img"/>
+        <div class="photo-overlay"></div>
+        <div class="photo-caption">☀ This could be your home — join 12,000+ Filipino solar homeowners</div>
+      </div>
+    </section>
+    <div class="footer-strip"><span>Lead Funnel · Step 2 of 2 — Thank You Page</span><button class="btn btn-outline" style="padding:9px 18px;font-size:11px;" onclick="gotoPage('lead',1)">← Back</button></div>
+  </div>
+</div>
+
+<!-- BOOKING FUNNEL -->
+<div class="funnel" id="funnel-booking">
+  <div class="page-nav">
+    <div class="pnav-step active" onclick="gotoPage('booking',1)" id="booking-pnav-1"><div class="pnav-num">1</div>Offer</div>
+    <div class="pnav-arrow">›</div>
+    <div class="pnav-step" onclick="gotoPage('booking',2)" id="booking-pnav-2"><div class="pnav-num">2</div>Your Info</div>
+    <div class="pnav-arrow">›</div>
+    <div class="pnav-step" onclick="gotoPage('booking',3)" id="booking-pnav-3"><div class="pnav-num">3</div>Schedule</div>
+    <div class="pnav-arrow">›</div>
+    <div class="pnav-step" onclick="gotoPage('booking',4)" id="booking-pnav-4"><div class="pnav-num">4</div>Confirmed</div>
+  </div>
+
+  <!-- BOOKING P1 -->
+  <div class="fpage active" id="booking-p1">
+    <div class="split-hero">
+      <div class="split-left">
+        <div class="hero-grid-bg"></div>
+        <div class="sun-glow" style="width:400px;height:400px;top:-100px;left:-100px;"></div>
+        <div style="position:relative;z-index:2;">
+          <div class="eyebrow">Free · No Obligation · 45 Minutes</div>
+          <h1 class="hero-title" style="font-size:clamp(40px,5.5vw,76px);">Book Your Free<br>Solar Home<br><span class="accent">Assessment</span></h1>
+          <p class="hero-sub">A certified engineer visits your home, analyzes your roof and electricity usage, and gives you a precise savings estimate — completely free.</p>
+          <div class="grid-2" style="margin-bottom:32px;gap:12px;">
+            <div class="card" style="padding:16px;"><div style="font-size:18px;margin-bottom:6px;">🏠</div><div class="card-title" style="font-size:14px;">Roof Analysis</div><div class="card-text" style="font-size:12px;">We check orientation, shading, and structural suitability.</div></div>
+            <div class="card" style="padding:16px;"><div style="font-size:18px;margin-bottom:6px;">📊</div><div class="card-title" style="font-size:14px;">Custom Proposal</div><div class="card-text" style="font-size:12px;">Full design and savings forecast within 24 hours.</div></div>
+            <div class="card" style="padding:16px;"><div style="font-size:18px;margin-bottom:6px;">💰</div><div class="card-title" style="font-size:14px;">Financing Options</div><div class="card-text" style="font-size:12px;">Including zero-downpayment plans.</div></div>
+            <div class="card" style="padding:16px;"><div style="font-size:18px;margin-bottom:6px;">✅</div><div class="card-title" style="font-size:14px;">No Commitment</div><div class="card-text" style="font-size:12px;">No pressure, no hidden fees.</div></div>
+          </div>
+          <button class="btn btn-sun" style="font-size:14px;padding:16px 36px;" onclick="gotoPage('booking',2)">Book My Free Assessment <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="8" x2="13" y2="8"/><polyline points="9,4 13,8 9,12"/></svg></button>
+        </div>
+      </div>
+      <div class="split-right">
+        <img src="https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=900&q=80&fit=crop" alt="Engineer installing" class="photo-img"/>
+        <div style="position:absolute;bottom:24px;right:24px;z-index:3;">
+          <div class="img-badge">🔧 DOE Certified Engineers</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-strip"><span>Booking Funnel · Step 1 of 4 — Offer Page</span><button class="btn btn-sun" style="padding:9px 18px;font-size:11px;" onclick="gotoPage('booking',2)">Next →</button></div>
+  </div>
+
+  <!-- BOOKING P2 -->
+  <div class="fpage" id="booking-p2">
+    <section>
+      <div class="section-label">Step 2 of 4</div>
+      <div class="section-title">Tell Us About<br><span style="color:var(--sun)">Your Home</span></div>
+      <div class="section-sub">We use this to assign the right engineer. Takes 60 seconds.</div>
+      <div class="grid-2" style="gap:48px;align-items:start;">
+        <div>
+          <div class="form-field"><label>Full Name</label><input type="text" placeholder="e.g. Maria Santos"/></div>
+          <div class="form-field"><label>Email Address</label><input type="email" placeholder="you@email.com"/></div>
+          <div class="form-field"><label>Mobile Number</label><input type="tel" placeholder="+63 9XX XXX XXXX"/></div>
+          <div class="form-field"><label>City / Municipality</label><input type="text" placeholder="e.g. Makati City"/></div>
+          <div class="form-field">
+            <label>Average Monthly Electric Bill</label>
+            <select><option>Below ₱3,000</option><option selected>₱3,000 – ₱6,000</option><option>₱6,000 – ₱12,000</option><option>₱12,000 – ₱20,000</option><option>Above ₱20,000</option></select>
+          </div>
+          <div style="margin-top:8px;">
+            <button class="btn btn-sun" style="width:100%;justify-content:center;" onclick="gotoPage('booking',3)">Pick My Schedule →</button>
+          </div>
+          <div class="trust-row">🔒 Your details are private and secure.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div class="photo-frame" style="height:240px;">
+            <img src="https://images.unsplash.com/photo-1613665813446-82a78c468a1d?w=700&q=80&fit=crop" alt="Engineer visit" class="photo-img"/>
+            <div class="photo-overlay"></div>
+            <div class="photo-caption">👷 Your assigned engineer will contact you before the visit</div>
+          </div>
+          <div class="card"><div class="card-icon">📅</div><div class="card-title">What Happens Next</div><div class="card-text">After submitting, you'll pick your preferred date and time. We'll send a confirmation with your engineer's name and contact number.</div></div>
+        </div>
+      </div>
+    </section>
+    <div class="footer-strip"><span>Booking Funnel · Step 2 of 4 — Your Info</span><div style="display:flex;gap:8px;"><button class="btn btn-outline" style="padding:9px 18px;font-size:11px;" onclick="gotoPage('booking',1)">← Back</button><button class="btn btn-sun" style="padding:9px 18px;font-size:11px;" onclick="gotoPage('booking',3)">Next →</button></div></div>
+  </div>
+
+  <!-- BOOKING P3: CALENDAR -->
+  <div class="fpage" id="booking-p3">
+    <section>
+      <div class="section-label">Step 3 of 4</div>
+      <div class="section-title">Choose Your<br><span style="color:var(--sun)">Schedule</span></div>
+      <div class="section-sub">Pick a date and time. Our engineer will be at your home for about 45 minutes.</div>
+      <div class="grid-2" style="gap:40px;align-items:start;">
+        <div>
+          <div class="cal-wrap">
+            <div class="cal-header"><div class="cal-month">JUNE 2025</div><div style="display:flex;gap:6px;"><button class="cal-nav-btn">‹</button><button class="cal-nav-btn">›</button></div></div>
+            <div class="cal-grid">
+              <div class="cal-day-lbl">Su</div><div class="cal-day-lbl">Mo</div><div class="cal-day-lbl">Tu</div><div class="cal-day-lbl">We</div><div class="cal-day-lbl">Th</div><div class="cal-day-lbl">Fr</div><div class="cal-day-lbl">Sa</div>
+              <div class="cal-day"></div><div class="cal-day avail" onclick="selDay(this)">2</div><div class="cal-day avail" onclick="selDay(this)">3</div><div class="cal-day avail" onclick="selDay(this)">4</div><div class="cal-day avail" onclick="selDay(this)">5</div><div class="cal-day">6</div><div class="cal-day">7</div>
+              <div class="cal-day">8</div><div class="cal-day avail" onclick="selDay(this)">9</div><div class="cal-day avail" onclick="selDay(this)">10</div><div class="cal-day avail" onclick="selDay(this)">11</div><div class="cal-day avail" onclick="selDay(this)">12</div><div class="cal-day">13</div><div class="cal-day">14</div>
+              <div class="cal-day">15</div><div class="cal-day avail" onclick="selDay(this)">16</div><div class="cal-day avail" onclick="selDay(this)">17</div><div class="cal-day avail" onclick="selDay(this)">18</div><div class="cal-day avail" onclick="selDay(this)">19</div><div class="cal-day">20</div><div class="cal-day">21</div>
+              <div class="cal-day">22</div><div class="cal-day avail" onclick="selDay(this)">23</div><div class="cal-day avail" onclick="selDay(this)">24</div><div class="cal-day avail" onclick="selDay(this)">25</div><div class="cal-day avail" onclick="selDay(this)">26</div><div class="cal-day">27</div><div class="cal-day">28</div>
+            </div>
+            <div class="time-slots" id="bTimeSlots">
+              <div class="time-lbl">Available Times</div>
+              <div class="slots-grid">
+                <div class="slot" onclick="selSlot(this)">8:00 AM</div><div class="slot" onclick="selSlot(this)">9:00 AM</div><div class="slot" onclick="selSlot(this)">10:00 AM</div>
+                <div class="slot" onclick="selSlot(this)">1:00 PM</div><div class="slot" onclick="selSlot(this)">2:00 PM</div><div class="slot" onclick="selSlot(this)">4:00 PM</div>
+              </div>
+              <button class="btn btn-sun" id="bConfirmBtn" style="width:100%;justify-content:center;display:none;" onclick="gotoPage('booking',4)">Confirm My Booking ☀</button>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div class="photo-frame" style="height:220px;">
+            <img src="https://images.unsplash.com/photo-1595437193398-b27ab8ddc0e7?w=700&q=80&fit=crop" alt="Solar home" class="photo-img"/>
+            <div class="photo-overlay"></div>
+            <div class="photo-caption">🏠 Your home assessed and system designed in one visit</div>
+          </div>
+          <div class="card"><div class="card-icon">🕐</div><div class="card-title">45-Minute Visit</div><div class="card-text">Our engineer checks your roof, reviews your electric bills, and answers all your questions before leaving.</div></div>
+          <div class="card"><div class="card-icon">🔄</div><div class="card-title">Easy Reschedule</div><div class="card-text">Reschedule up to 2 hours before your appointment with no penalty — just reply to your confirmation email.</div></div>
+        </div>
+      </div>
+    </section>
+    <div class="footer-strip"><span>Booking Funnel · Step 3 of 4 — Schedule</span><button class="btn btn-outline" style="padding:9px 18px;font-size:11px;" onclick="gotoPage('booking',2)">← Back</button></div>
+  </div>
+
+  <!-- BOOKING P4: CONFIRMED -->
+  <div class="fpage" id="booking-p4">
+    <section style="text-align:center;display:flex;flex-direction:column;align-items:center;min-height:70vh;justify-content:center;">
+      <div class="confirm-icon"><svg viewBox="0 0 36 36"><polyline points="6,18 14,26 30,10"/></svg></div>
+      <div class="eyebrow" style="justify-content:center;">Assessment Booked</div>
+      <h2 class="hero-title" style="text-align:center;font-size:clamp(38px,5vw,64px);">You're All Set!<br><span class="accent">See You Soon ☀</span></h2>
+      <p class="hero-sub" style="text-align:center;margin:0 auto 32px;max-width:480px;">Your free solar assessment is confirmed. Check your email and SMS for your engineer's details.</p>
+      <div style="background:var(--sky-mid);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:440px;width:100%;text-align:left;margin-bottom:20px;">
+        <div style="font-size:10px;font-family:var(--font-display);letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;">Your Appointment</div>
+        <div class="bdc-row"><span class="bdc-icon">📅</span><div><div class="bdc-label">Date & Time</div><div class="bdc-val">June 10, 2025 · 10:00 AM</div></div></div>
+        <div class="bdc-row"><span class="bdc-icon">⏱</span><div><div class="bdc-label">Duration</div><div class="bdc-val">~45 minutes at your home</div></div></div>
+        <div class="bdc-row"><span class="bdc-icon">👷</span><div><div class="bdc-label">Your Engineer</div><div class="bdc-val">Engr. Carlo Dela Cruz — SolarAxis Certified</div></div></div>
+        <div class="bdc-row" style="margin-bottom:0"><span class="bdc-icon">📞</span><div><div class="bdc-label">Contact</div><div class="bdc-val">+63 917 XXX XXXX</div></div></div>
+      </div>
+      <div class="photo-frame" style="max-width:440px;width:100%;height:180px;margin-bottom:20px;">
+        <img src="https://images.unsplash.com/photo-1509391366360-2e959784a276?w=700&q=80&fit=crop" alt="Completed installation" class="photo-img"/>
+        <div class="photo-overlay"></div>
+        <div class="photo-caption">☀ This is what your home will look like after installation</div>
+      </div>
+      <div style="font-size:13px;color:var(--muted);font-style:italic;">Follow us → <span style="color:var(--sun);">@solaraxis.ph</span></div>
+    </section>
+    <div class="footer-strip"><span>Booking Funnel · Step 4 of 4 — Confirmed</span><button class="btn btn-outline" style="padding:9px 18px;font-size:11px;" onclick="gotoPage('booking',3)">← Back</button></div>
+  </div>
+</div>
+
+<script>
+const funnelList=['sales','lead','booking'];
+const pageNames={sales:['Hero','Gallery','How It Works','Calculator','Reviews','CTA'],lead:['Opt-in','Thank You'],booking:['Offer','Your Info','Schedule','Confirmed']};
+const pageCounts={sales:6,lead:2,booking:4};
+let activeFunnel='sales';
+
+function switchFunnel(id){
+  document.getElementById('funnel-'+activeFunnel).classList.remove('active');
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  activeFunnel=id;
+  document.getElementById('funnel-'+id).classList.add('active');
+  document.querySelectorAll('.nav-tab')[funnelList.indexOf(id)].classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  document.getElementById('pageBadge').textContent=pageNames[id][0];
+}
+
+function gotoPage(funnel,n){
+  const total=pageCounts[funnel];
+  for(let i=1;i<=total;i++){
+    const el=document.getElementById(funnel+'-p'+i);
+    const nav=document.getElementById(funnel+'-pnav-'+i);
+    if(el)el.classList.toggle('active',i===n);
+    if(nav)nav.className='pnav-step'+(i<n?' done':i===n?' active':'');
+  }
+  document.getElementById('pageBadge').textContent=pageNames[funnel][n-1]||'Page '+n;
+  window.scrollTo({top:64,behavior:'smooth'});
+}
+
+function calcSavings(){
+  const bill=parseFloat(document.getElementById('billInput').value)||0;
+  const size=parseFloat(document.getElementById('homeSize').value)||1;
+  if(bill===0){document.getElementById('calcNum').textContent='₱ —';document.getElementById('calcAnnual').textContent='';return;}
+  const s=Math.round(bill*0.72*size/100)*100;
+  document.getElementById('calcNum').textContent='₱ '+s.toLocaleString();
+  document.getElementById('calcAnnual').textContent='≈ ₱'+(s*12).toLocaleString()+' per year · Payback in ~5–7 years';
+}
+
+function selDay(el){
+  document.querySelectorAll('.cal-day.sel').forEach(d=>d.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('bTimeSlots').classList.add('show');
+  document.getElementById('bConfirmBtn').style.display='none';
+  document.querySelectorAll('.slot.active').forEach(s=>s.classList.remove('active'));
+}
+function selSlot(el){
+  document.querySelectorAll('.slot.active').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('bConfirmBtn').style.display='flex';
+}
+</script>
 </body>
 </html>
