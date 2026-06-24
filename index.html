@@ -430,7 +430,7 @@ section{padding:80px 60px;max-width:1100px;margin:0 auto;}
         <h2 class="hero-title" style="text-align:center;font-size:clamp(44px,6vw,80px);">Ready to Stop<br>Overpaying<br><span class="accent">Meralco?</span></h2>
         <p class="hero-sub" style="text-align:center;margin:0 auto 40px;max-width:480px;">Get your free solar assessment this week. No obligation, no pressure — just a clear picture of how much you'll save.</p>
         <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-bottom:32px;">
-          <button class="btn btn-sun" style="font-size:14px;padding:18px 40px;" onclick="switchFunnel('booking')">Book Free Assessment ☀</button>
+          <button class="btn btn-sun" style="font-size:14px;padding:18px 40px;" onclick="sendLeadToZapier(); switchFunnel('booking')">Book Free Assessment *</button>
           <button class="btn btn-outline" onclick="switchFunnel('lead')">Download Free Guide</button>
         </div>
         <div style="display:flex;gap:28px;justify-content:center;flex-wrap:wrap;">
@@ -749,6 +749,40 @@ function confirmBooking() {
 document.addEventListener('DOMContentLoaded', () => {
   renderCalendar();
 });
+  // Zapier Integration - Send lead data when booking button is clicked
+function sendLeadToZapier() {
+  // ⚠️ REPLACE THIS with your actual Zapier Webhook URL
+  const zapierWebhookURL = 'https://hooks.zapier.com/hooks/catch/YOUR_WEBHOOK_ID/';
+  
+  const leadData = {
+    event_type: 'Book Free Assessment Click',
+    funnel_source: 'Sales Funnel - CTA Page',
+    customer_name: document.querySelector('input[name="name"]')?.value || '',
+    customer_email: document.querySelector('input[name="email"]')?.value || '',
+    customer_phone: document.querySelector('input[name="phone"]')?.value || '',
+    preferred_date: selectedDate ? selectedDate.toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'}) : '',
+    preferred_time: selectedTime || '',
+    timestamp: new Date().toISOString(),
+    page_url: window.location.href
+ function sendLeadToZapier() {
+  const zapierWebhookURL = 'https://hooks.zapier.com/hooks/catch/27510169/42dqus9/'; //
+  const leadData = {
+    event_type: 'Book Free Assessment Click',
+    funnel_source: 'Sales Funnel - CTA Page',
+    // ... rest of your leadData
+  };
+
+  // Send to Zapier (using no-cors mode for Zapier webhooks)
+  fetch(zapierWebhookURL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(leadData)
+  })
+  // ... rest of the code
+}
 </script>
 </body>
 </html>
